@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Examination Portal</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .exam-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .timer {
+            background: #dc2626;
+            padding: 8px 15px;
+            border-radius: 6px;
+        }
+
+        .warning {
+            background: #f59e0b;
+            padding: 8px 15px;
+            border-radius: 6px;
+            margin-left: 15px;
+        }
+
+        .container {
+            margin-top: 90px;
+            padding: 30px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .question-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        button {
+            padding: 12px 25px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .submit-box {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .camera-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            border: 3px solid red;
+            border-radius: 10px;
+            overflow: hidden;
+            background: black;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="exam-title">Online Examination System</div>
+    <div>
+        <span class="timer">Time Left: <span id="timer">02:00</span></span>
+        <span class="warning">Warnings: <span id="warningCount">0</span></span>
+    </div>
+</header>
+
+<div class="camera-box">
+    <img src="{{ url_for('video') }}" width="220">
+</div>
+
+<div class="container">
+
+<form id="examForm" method="POST" action="{{ url_for('submit_exam') }}">
+
+<div class="question-card">
+    <h3>1. HTML stands for?</h3>
+    <input type="radio" name="q1" value="a"> Hyper Text Markup Language<br>
+    <input type="radio" name="q1" value="b"> Home Tool Markup Language<br>
+    <input type="radio" name="q1" value="c"> Hyper Tool Makeup Language<br>
+    <input type="radio" name="q1" value="d"> High Tool Machine Language<br>
+</div>
+
+<div class="question-card">
+    <h3>2. CSS is used for?</h3>
+    <input type="radio" name="q2" value="a"> Structure<br>
+    <input type="radio" name="q2" value="b"> Styling<br>
+    <input type="radio" name="q2" value="c"> Editing<br>
+    <input type="radio" name="q2" value="d"> Deleting<br>
+</div>
+
+<div class="question-card">
+    <h3>3. Flask is written in?</h3>
+    <input type="radio" name="q3" value="a"> Java<br>
+    <input type="radio" name="q3" value="b"> Python<br>
+    <input type="radio" name="q3" value="c"> DBMS<br>
+    <input type="radio" name="q3" value="d"> C++<br>
+</div>
+
+<div class="question-card">
+    <h3>4. Python is?</h3>
+    <input type="radio" name="q4" value="a"> Programming Language<br>
+    <input type="radio" name="q4" value="b"> Database<br>
+    <input type="radio" name="q4" value="c"> Snake<br>
+    <input type="radio" name="q4" value="d"> Dataset<br>
+</div>
+
+<div class="question-card">
+    <h3>5. AI stands for?</h3>
+    <input type="radio" name="q5" value="a"> Artificial Intelligence<br>
+    <input type="radio" name="q5" value="b"> Automated Input<br>
+    <input type="radio" name="q5" value="c"> Automata Input<br>
+    <input type="radio" name="q5" value="d"> Artificial Information<br>
+</div>
+
+<div class="submit-box">
+    <button type="submit">Submit Exam</button>
+</div>
+
+</form>
+</div>
+
+<script>
+
+let submitted = false;
+let localWarnings = 0;
+
+/* TIMER */
+let totalTime = 2 * 60;
+let timerDisplay = document.getElementById("timer");
+
+function updateTimer() {
+    let minutes = Math.floor(totalTime / 60);
+    let seconds = totalTime % 60;
+
+    seconds = seconds < 10 ? "0" + seconds : seconds;
+    timerDisplay.innerHTML = minutes + ":" + seconds;
+
+    if (totalTime <= 0 && !submitted) {
+        alert("Time up! Auto submitting...");
+        submitted = true;
+        document.getElementById("examForm").submit();
+    }
+    totalTime--;
+}
+
+setInterval(updateTimer, 1000);
+
+/* WARNING SYNC */
+function syncWarnings(){
+    fetch("/check_warning")
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("warningCount").innerText = data.limit ? "MAX" : localWarnings;
+        if(data.limit && !submitted){
+            alert("Warning limit reached. Auto submitted.");
+            submitted = true;
+            document.getElementById("examForm").submit();
+        }
+    });
+}
+
+setInterval(syncWarnings,2000);
+
+/* TAB DETECTION */
+document.addEventListener("visibilitychange", function() {
+    if(document.hidden && !submitted){
+        fetch("/tab_warning");
+        localWarnings++;
+        document.getElementById("warningCount").innerText = localWarnings;
+        alert("Tab switching detected!");
+    }
+});
+
+window.addEventListener("blur", function(){
+    if(!submitted){
+        fetch("/tab_warning");
+        localWarnings++;
+        document.getElementById("warningCount").innerText = localWarnings;
+        alert("Window left!");
+    }
+});
+
+document.getElementById("examForm").addEventListener("submit", function(){
+    submitted = true;
+});
+
+</script>
+
+</body>
+</html>

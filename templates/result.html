@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exam Result</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+        }
+
+        .result-container {
+            max-width: 700px;
+            margin: 80px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .status-pass {
+            color: green;
+            font-weight: bold;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .status-fail {
+            color: red;
+            font-weight: bold;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .details {
+            margin-top: 30px;
+        }
+
+        .details p {
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        .warning {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        button {
+            margin-top: 30px;
+            padding: 12px 25px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="result-container">
+
+    <h2>Examination Result</h2>
+
+    {% if passed %}
+        <div class="status-pass">Congratulations! You Passed 🎉</div>
+    {% else %}
+        <div class="status-fail">You Failed ❌</div>
+    {% endif %}
+
+    <div class="details">
+        <p><strong>Name:</strong> {{ name }}</p>
+        <p><strong>Roll Number:</strong> {{ roll }}</p>
+        <p><strong>Email:</strong> {{ email }}</p>
+        <p><strong>Score:</strong> {{ score }} / 50</p>
+        <p><strong>Total Warnings:</strong> <span class="warning">{{ warnings }}</span></p>
+        <p><strong>Submission Type:</strong> {{ reason }}</p>
+    </div>
+
+    <button onclick="window.location.href='/'">Back to Home</button>
+
+</div>
+
+</body>
+</html>
